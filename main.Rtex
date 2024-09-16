@@ -1,0 +1,128 @@
+\documentclass{article}
+\usepackage{listings}
+\title{KnitR meets Overleaf}
+
+\begin{document}
+\maketitle
+
+\section{R commands in Overleaf}
+
+You can type R commands in your \LaTeX{} document which will be processed and their output included in the document:
+
+<<echo=FALSE>>=
+# Create a sequence of numbers
+X = 2:10
+
+# Display basic statistical measures
+summary(X)
+
+@
+
+\subsection{Inline}
+
+So, the mean of the data is $\Sexpr{mean(X)}$
+
+\section{Chunk options}
+
+<<background= '#000000'>>= 
+gcd <- function(a, b) {
+    while(b != 0) {
+        h = a %% b
+        a = b
+        b = h
+    }
+return(a)
+}
+gcd(3780,3528)
+@
+
+
+\section{Display Code}
+
+\begin{lstlisting}[language=R]
+fib <- function(n) {
+  if (n < 2)
+    n
+  else
+    fib(n - 1) + fib(n - 2)
+}
+fib(10) # => 55
+\end{lstlisting}
+
+\section{External scripts}
+
+The chunk below will not be printed
+
+<<echo=FALSE, cache=FALSE>>=
+read_chunk("myscript.R")
+@
+
+The code must show up here
+
+<<myrcode2>>=
+
+@
+
+\section{Plots}
+
+
+<<plot1, fig.pos="h", fig.height=3, fig.width=6, fig.cap="First plot">>=
+
+xdata = read.csv(file="data.txt", head=TRUE,sep=" ")
+
+library(ggplot2)
+ggplot(xdata, aes(x=data)) + geom_histogram(binwidth=0.1)
+
+@
+
+The figure \ref{fig:plot1} is simple histogram.
+
+
+
+\section{Tables}
+
+You can do lots of things within a document. For example, here I create a dataframe and a table of the first few rows. Also, notice that in the caption I use the \texttt{\textbackslash Sexpr\{\}} syntax, which lets you access R variables inline within a document.
+
+\begin{table}
+  \centering
+<<example_table, echo=FALSE>>=
+df = data.frame(x.1 = rnorm(100),
+    x.2 = rnorm(100),
+    x.3 = sample(c(T,F), 100, replace=T))
+
+df$y = 2 * df$x.1 + 3 * df$x.2 + df$x.3 + rnorm(100)
+    
+kable(head(df), format="latex")
+@
+
+\caption{This is a test table. The mean value of y is \Sexpr{mean(df$y)}.}
+\label{tab:test}
+\end{table}
+
+\section{Regression Tables}
+
+You may also want to display regression tables. This simple table has two models: one of just $x.1$ as a predictor for $y$. The second model includes the other predictors.
+
+<<example_regression, echo = F, results='asis', message=F>>=
+
+library(xtable)
+m1 <- lm(y ~ x.1, data = df)
+m2 <- lm(y ~ x.1 + x.2 + x.3, data = df)
+
+xtable(m1)
+
+xtable(m2)
+
+@
+
+\section{Packages}
+
+There is no way to install new packages, so lets try which ones are there
+
+<< >>=
+library(tidyverse)
+library(MASS)
+sessionInfo()
+@
+
+\end{document}
